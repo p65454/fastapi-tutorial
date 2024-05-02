@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette_context.middleware import ContextMiddleware
 
 from app.core.lifespan import lifespan
+from app.core.middlewares.sqlalchemy import SQLAlchemyMiddleware
 from app.core.errors.error import BaseAPIException
 from app.core.errors.handler import api_error_handler
 from app.routers import router
@@ -18,8 +20,26 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(SQLAlchemyMiddleware)
+app.add_middleware(ContextMiddleware)
 
 
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
+
+
+from app.core.db.session import AsyncScopedSession
+from app.core.logger import logger
+
+
+@app.get("/session/test")
+async def session_test():
+    async with AsyncScopedSession() as session:
+        logger.debug(session)
+    async with AsyncScopedSession() as session:
+        logger.debug(session)
+    async with AsyncScopedSession() as session:
+        logger.debug(session)
+    async with AsyncScopedSession() as session:
+        logger.debug(session)
