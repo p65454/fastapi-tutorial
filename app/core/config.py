@@ -16,7 +16,7 @@ class Config(BaseSettings):
 
     LOG_LEVEL: int = logging.DEBUG
 
-    DB_URL: str = "postgresql+asyncpg://postgres:password@localhost:5432/postgres"
+    DB_URL: str = "postgresql+asyncpg://postgres:ls_mle_course@34.47.96.8:5432/academy"
 
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
