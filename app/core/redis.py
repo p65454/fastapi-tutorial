@@ -4,6 +4,7 @@ from functools import wraps
 
 from redis.asyncio import Redis
 
+
 from app.core.config import config
 from app.core.logger import logger
 
@@ -36,6 +37,7 @@ redis_cache = RedisCache()
 
 
 class RedisCacheDecorator:
+
     def __init__(self, ttl: int = 60):
         self.ttl = ttl
 
@@ -46,15 +48,18 @@ class RedisCacheDecorator:
         @wraps(func)
         async def wrapper(*args, **kwargs):
             _key = self.key_builder(func.__name__, *args, *kwargs)
-
-            if await redis_cache.exists(_key):
-                logger.debug("Cache hit")
-                result = await redis_cache.get(_key)
-            else:
-                logger.debug("Cache miss")
+            try:
+                if await redis_cache.exists(_key):
+                    logger.debug("Cache hit")
+                    result = await redis_cache.get(_key)
+                else:
+                    logger.debug("Cache miss")
+                    result = await func(*args, **kwargs)
+                    if result:
+                        await redis_cache.set(_key, result, ttl=self.ttl)
+            except Exception as e:
+                logger.error(f"Error in cache decorator: {e}")
                 result = await func(*args, **kwargs)
-                if result:
-                    await redis_cache.set(_key, result, ttl=self.ttl)
 
             return result
 
