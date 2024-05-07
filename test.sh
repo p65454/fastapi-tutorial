@@ -1,2 +1,2 @@
-ENV=test
+export ENV=test
 pytest tests -s
